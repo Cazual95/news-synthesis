@@ -14,7 +14,10 @@ information is.
 
 ### Transparency
 
-I really want to 
+I believe transparency to be the most important principle when creating this project. If I am going to 
+ask people to step outside their information comfort zone, then I need to be very open about where I 
+source my information, how I transform it, what models I am using, and how my algorithms work. I plan on 
+creating documentation for each specific relevant piece, and of course you can see the source code here.
 
 ## Initial Project Scope
 I plan on building this over about 6 months or so. I am without a doubt going to define a scope that
