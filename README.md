@@ -27,7 +27,7 @@ Consider this readme as a work in progress, as I will use it for my notes.
 
 Here is the user experience I am imagining. 
 
-1) Users are presented a list of current events.
+1) Users are presented a list of current events (topics).
     - This is a listing of aggregated and synthesized headlines.
 2) They select a topic of interest and are presented with the sources that went into aggregation,
    and a synthesized article.
@@ -39,3 +39,8 @@ I want to provide an exhaustive list that will allow people to see the different
 based on data like source, regional popularity, social media sentiment, demographic popularity, etc. I 
 also want to provide users the ability to combine sources with different political alignments to help them
 see the through-lines. I think for a first pass I will pick two sources; Fox News and CNN.
+
+## Architecture
+Right now I am thinking about creating a Flask microservice to handle web scraping, and another to handle
+interaction with Weaviate.
+
