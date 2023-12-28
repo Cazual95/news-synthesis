@@ -11,6 +11,7 @@ from web_scraping_service.config import ApplicationConfig
 from web_scraping_service.scrapers.news import FoxNewsScraper
 
 from web_scraping_service import vector_db
+from web_scraping_service.vector_db import client
 
 app = flask.Flask(__name__)
 app.config.from_object(ApplicationConfig)
@@ -31,7 +32,8 @@ def scrape_job_1():
 
 if __name__ == '__main__':
     # app.run(debug=True, use_reloader=False)
-    # scraper = FoxNewsScraper(False)
-    # scraper.scrape(20)
-    vector_db.create_author_schema()
-    vector_db.create_article_schema()
+    scraper = FoxNewsScraper(False)
+    scraper.scrape(2)
+    # vector_db.create_author_schema()
+    # vector_db.create_article_schema()
+    # client.schema.delete_class("Author")

@@ -22,6 +22,11 @@ def create_author_schema() -> None:
                 "dataType": ["text"],
                 "description": "The profile page of the author.",
                 "name": "profilePage"
+            },
+            {
+                "dataType": ["blob"],
+                "description": "The thumbnail image of the author.",
+                "name": "thumbnail"
             }
         ]
     }
@@ -41,6 +46,11 @@ def create_article_schema() -> None:
             },
             {
                 "dataType": ["text"],
+                "description": "The url of the article.",
+                "name": "url",
+            },
+            {
+                "dataType": ["text"],
                 "description": "The title of the article.",
                 "name": "title"
             },
@@ -48,7 +58,33 @@ def create_article_schema() -> None:
                 "dataType": ["Author"],
                 "description": "The author of the article.",
                 "name": "author"
-            }
+            },
+            {
+                "dataType": ["date"],
+                "description": "Publication date.",
+                "name": "date",
+            },
         ]
     }
     client.schema.create_class(article_obj)
+
+def add_articles(articles: list[dict]) -> None:
+    """Add a collection of articles to weaviate.
+
+    Args:
+        articles: The articles to add.
+    """
+    with client.batch as batch:
+        for article in articles:
+            batch.add_data_object(article, 'Article')
+
+
+def add_authors(authors: list[dict]) -> None:
+    """Add a collection of authros to weaviate.
+
+    Args:
+        authors: The authors to add.
+    """
+    with client.batch as batch:
+        for author in authors:
+            batch.add_data_object(author, 'Author')
