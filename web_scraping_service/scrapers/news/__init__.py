@@ -1,0 +1,1 @@
+from .foxnews import FoxNewsScraper

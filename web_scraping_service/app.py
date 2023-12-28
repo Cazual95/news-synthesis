@@ -8,7 +8,7 @@ import flask
 from flask_apscheduler import APScheduler
 
 from web_scraping_service.config import ApplicationConfig
-from web_scraping_service.db import add_article
+from web_scraping_service.scrapers.news import FoxNewsScraper
 
 app = flask.Flask(__name__)
 app.config.from_object(ApplicationConfig)
@@ -19,12 +19,15 @@ scheduler.init_app(app)
 scheduler.start()
 
 
-@scheduler.task('interval', id='scrape_job_1', seconds=5)
+@scheduler.task('interval', id='scrape_job_1', minutes=5)
 def scrape_job_1():
     """Test interval running."""
-    with app.app_context():
-        add_article('article')
     print('Running scrape_job_1')
+    scraper = FoxNewsScraper(False)
+    scraper.scrape(20)
+
 
 if __name__ == '__main__':
-    app.run(debug=True, use_reloader=False)
+    # app.run(debug=True, use_reloader=False)
+    scraper = FoxNewsScraper(False)
+    scraper.scrape(20)

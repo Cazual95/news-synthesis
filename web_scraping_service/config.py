@@ -13,6 +13,9 @@ MONGO_PORT = os.environ.get('MONGO_PORT')
 MONGO_DB_NAME = os.environ.get('MONGO_DB_NAME')
 MONGO_AUTH_SOURCE = os.environ.get('MONGO_AUTH_SOURCE')
 
+FOXNEWS_USERNAME = os.environ.get('FOXNEWS_USERNAME')
+FOXNEWS_PASSWORD = os.environ.get('FOXNEWS_PASSWORD')
+
 
 class ApplicationConfig:
     """Flask application configuration."""
