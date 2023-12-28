@@ -16,6 +16,9 @@ MONGO_AUTH_SOURCE = os.environ.get('MONGO_AUTH_SOURCE')
 FOXNEWS_USERNAME = os.environ.get('FOXNEWS_USERNAME')
 FOXNEWS_PASSWORD = os.environ.get('FOXNEWS_PASSWORD')
 
+WEAVIATE_URL = os.environ.get('WEAVIATE_URL')
+
+
 
 class ApplicationConfig:
     """Flask application configuration."""

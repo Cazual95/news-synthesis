@@ -62,6 +62,17 @@ class FoxNewsScraper:
         page.wait_for_load_state('domcontentloaded')
         return page
 
+    def _get_article_links(self, page: playwright.sync_api.Page) -> list[str]:
+        """Get a list of article links on the current page.
+
+        Args:
+            page: The page to look for article links on.
+
+        Returns:
+            A list of links to articles.
+        """
+        return [title.locator('css=a').get_attribute('href') for title in page.locator('css=.title').all()]
+
 
     def scrape(self, max_articles: int) -> None:
         """Scrape the foxnews.com home page of articles.
@@ -77,6 +88,6 @@ class FoxNewsScraper:
             page.goto('https://www.foxnews.com/', wait_until='domcontentloaded')
             page = self._login(page)
             page.goto('https://www.foxnews.com/', wait_until='domcontentloaded')
-            titles = page.locator('css=.title').all_text_contents()
-            print(titles)
+            article_links = self._get_article_links(page)
+            print(article_links)
             time.sleep(5000)
