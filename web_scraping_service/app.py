@@ -33,7 +33,8 @@ def scrape_job_1():
 if __name__ == '__main__':
     # app.run(debug=True, use_reloader=False)
     scraper = FoxNewsScraper(False)
-    scraper.scrape(2)
+    with app.app_context():
+        scraper.scrape(2)
     # vector_db.create_author_schema()
     # vector_db.create_article_schema()
     # client.schema.delete_class("Author")

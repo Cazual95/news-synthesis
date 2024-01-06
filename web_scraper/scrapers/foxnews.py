@@ -9,20 +9,16 @@ fox_news_scraper.scrape()
 ```
 """
 import base64
-import json
 import random
-import time
-import uuid
-from datetime import datetime
 
-import flask_pymongo
 import playwright.sync_api
 import requests
 from playwright.sync_api import sync_playwright
 
-import web_scraping_service.mongodb.models
-import web_scraping_service.mongodb.db
+
 from web_scraping_service import config
+
+import data_models.article
 
 USER_AGENT_STRINGS = [
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.2227.0 Safari/537.36',
@@ -37,22 +33,32 @@ class FoxNewsScraper:
 
     Attributes:
         use_vpn: A flag to determine if a vpn should be used.
+        pw: The sync playwright instance to use.
+        logged_in_context: A playwright context that has already gone through the login process.
+        logged_in_page: A playwright page that has already been logged in.
     """
     use_vpn: bool = False
+    pw: playwright.sync_api.Playwright
+    logged_in_context: playwright.sync_api.BrowserContext
+    logged_in_page: playwright.sync_api.Page
 
-    def __init__(self, use_vpn: bool):
+    def __init__(self, use_vpn: bool, pw: playwright.sync_api.Playwright):
         """Initialize the scraper based on vpn preference."""
         self.use_vpn = use_vpn
+        self.pw = pw
+        self.logged_in_context, self.logged_in_page = self._login()
 
-    def _login(self, page: playwright.sync_api.Page) -> playwright.sync_api.Page:
+    def _login(self) -> (playwright.sync_api.BrowserContext, playwright.sync_api.Page):
         """Login to the website.
-
-        Args:
-            page: The page to begin the login process on.
 
         Returns:
             The post login page.
         """
+        browser = self.pw.chromium.launch(headless=False, slow_mo=50)
+        context = browser.new_context(user_agent=random.choice(USER_AGENT_STRINGS))
+        page = context.new_page()
+        page.set_default_timeout(30000)
+        page.goto('https://www.foxnews.com/', wait_until='domcontentloaded')
         page.locator('css=#account > div > a').click()
         page.wait_for_url('https://my.foxnews.com/')
         email_input = page.get_by_placeholder('name@mydomain.com')
@@ -68,7 +74,8 @@ class FoxNewsScraper:
         page.wait_for_load_state('domcontentloaded')
         page.locator("#wrapper").get_by_role("link", name="Fox News").click()
         page.wait_for_load_state('domcontentloaded')
-        return page
+        page.goto('https://www.foxnews.com/', wait_until='domcontentloaded')
+        return context, page
 
     def _get_article_links(self, page: playwright.sync_api.Page) -> list[playwright.sync_api.Locator]:
         """Get a list of article links on the current page.
@@ -82,7 +89,7 @@ class FoxNewsScraper:
         return page.locator('css=.title').all()
 
     def _scrape_article(self, page: playwright.sync_api.Page) -> (
-            web_scraping_service.mongodb.models.SourceArticle, list[web_scraping_service.mongodb.models.SourceArticle]):
+            data_models.article.SourceArticle, list[data_models.article.SourceArticle]):
         """Scrape the article and authors from an article page.
 
         Args:
@@ -98,7 +105,7 @@ class FoxNewsScraper:
         except:
             thumbnail = None
         author_info = author_loc.locator('css=a').all()[0]
-        author = web_scraping_service.mongodb.models.SourceAuthor(
+        author = data_models.article.SourceAuthor(
             name=author_info.inner_text(),
             profilePage=author_info.get_attribute('href'),
             profileImage=thumbnail
@@ -110,7 +117,7 @@ class FoxNewsScraper:
             except:
                 pass
         content = '\n'.join(content_list)
-        article = web_scraping_service.mongodb.models.SourceArticle(
+        article = data_models.article.SourceArticle(
             url=page.url,
             title=page.locator(
                 'css=#wrapper > div.page-content > div.row.full > main > article > header > div.article-meta.article-meta-upper > h1').inner_text(),
@@ -121,27 +128,16 @@ class FoxNewsScraper:
         )
         return article, [author]
 
-    def scrape(self, max_articles: int) -> None:
+    def scrape(self, url: str) -> (data_models.article.SourceArticle, list[data_models.article.SourceAuthor]):
         """Scrape the foxnews.com home page of articles.
 
         Args:
-            max_articles: The maximum number of articles to scrape before stopping.
+            url: The url to scrape.
+
+        Returns:
+            A scraped article and a collection of article authors.
         """
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=False, slow_mo=50)
-            context = browser.new_context(user_agent=random.choice(USER_AGENT_STRINGS))
-            page = context.new_page()
-            page.set_default_timeout(30000)
-            page.goto('https://www.foxnews.com/', wait_until='domcontentloaded')
-            page = self._login(page)
-            page.goto('https://www.foxnews.com/', wait_until='domcontentloaded')
-            article_links = self._get_article_links(page)
-            for index, link in enumerate(article_links):
-                link.click()
-                article, authors = self._scrape_article(page)
-                web_scraping_service.mongodb.db.add_article(article)
-                web_scraping_service.mongodb.db.add_authors(authors)
-                if index > max_articles:
-                    break
-                page.go_back(timeout=600000)
-                page.wait_for_load_state('domcontentloaded')
+        page = self.logged_in_page
+        page.goto(url)
+        article, authors = self._scrape_article(page)
+        return article, authors

@@ -40,6 +40,11 @@ def create_article_schema() -> None:
         "description": "A news article.",
         "properties": [
             {
+                "dataType": ["uuid"],
+                "description": "The unique identifier of the article.",
+                "name": "id",
+            },
+            {
                 "dataType": ["text"],
                 "description": "The content of the article.",
                 "name": "content",
@@ -62,7 +67,7 @@ def create_article_schema() -> None:
             {
                 "dataType": ["date"],
                 "description": "Publication date.",
-                "name": "date",
+                "name": "publicationDate",
             },
         ]
     }
