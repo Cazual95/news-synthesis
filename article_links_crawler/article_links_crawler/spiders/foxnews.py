@@ -50,5 +50,5 @@ class FoxNewsSpider(scrapy.Spider):
                     url=url,
                     domainTopic=topic
                 )
-                producer.send('articles-to-scrape', article_link_item)
+                producer.send('sites-to-scrape', article_link_item)
                 yield article_link_item
